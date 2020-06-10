@@ -1,0 +1,1 @@
+node tpp.js treefy "C:\Users\Prashuk\Desktop\PBC DEV\Lecture_3_03_06_2020\raw\poc\xyz" "C:\Users\Prashuk\Desktop\PBC DEV\Lecture_3_03_06_2020\activity\dest"
