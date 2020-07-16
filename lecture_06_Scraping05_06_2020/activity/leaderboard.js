@@ -1,6 +1,5 @@
 let request = require("request");
 let fs = require("fs");
-
 // npm install cheerio
 let cheerio = require("cheerio");
 console.log("Sending Request");
@@ -70,13 +69,20 @@ function handleEachMatch(matchLink) {
 //input=> matchPageHtml=>  get respective teamName,run,type,score of a player
 function parseMatch(html) {
     let $ = cheerio.load(html);
+    let format = $(".desc.text-truncate").text();
+    if (format.includes("ODI") == true) {
+        format = "ODI"
+    } else {
+        format = "T20I"
+    }
     // scorecards
     let innings = $(".card.content-block.match-scorecard-table");
     innings = innings.slice(0, 2);
     for (let i = 0; i < innings.length; i++) {
         let cInning = innings[i];
         let teamName = $(cInning).find("h5").text();
-        console.log(teamName);
+        teamName = teamName.split("Innings").shift();
+        // console.log(teamName);
         let BatsmenList = $(cInning).find(".table.batsman tbody tr");
         for (let j = 0; j < BatsmenList.length; j++) {
             let bCols = $(BatsmenList[j]).find("td");
@@ -84,7 +90,8 @@ function parseMatch(html) {
             if (isBatsManRow) {
                 let batsManName = $(bCols[0]).text();
                 let runs = $(bCols[2]).text();
-                console.log( batsManName + " " + runs);
+                AddToLeaderBoard(batsManName, teamName, runs, format)
+                // console.log( batsManName + " " + runs);
             }
         }
         console.log("###############################");
@@ -93,6 +100,23 @@ function parseMatch(html) {
 }
 // 
 // create leaderboard
-function AddToLeaderBoard(name, team, run, mType) {
-
+function AddToLeaderBoard(name, team, runs, format) {
+    runs = Number(runs)
+    for (let i = 0; i < leaderboard.length; i++) {
+        let cplayerInfo = leaderboard[i];
+        let match = cplayerInfo.Name == name && cplayerInfo.Team == team && cplayerInfo.Format == format;
+        // console.log(ma)
+        if (match == true) {
+            // update
+            cplayerInfo.TotalRuns += runs;
+            return;
+        }
+    }
+    // create a new entry and push to leaderboard
+    let playerInfo = {};
+    playerInfo.TotalRuns = runs;
+    playerInfo.Name = name;
+    playerInfo.Team = team;
+    playerInfo.Format = format;
+    leaderboard.push(playerInfo);
 }
